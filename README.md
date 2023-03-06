@@ -120,7 +120,7 @@ Here's an example of a closed conversation for an incident report:
         }
     ```
     
-The messages array contains the data that needs to be parsed and displayed to the public in real time. The same format is followed for all report types.
+The `messages` array contains the data that needs to be parsed and displayed to the public in real time. The same format is followed for all report types.
 ### TO-DO
 - Handlers: To complete functionality of the bot, the validation handlers for incident, progress and results need to be implemented  [/prompts](./prompts)
 - Message Copy - We've identified that we need at least 21 templates for all 4 conversation flows, we need all of this to be written.
