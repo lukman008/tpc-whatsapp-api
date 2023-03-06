@@ -38,8 +38,8 @@ If they haven't, it starts a new `Conversation` to register the user.
 If the user has been registered, it checks for an open `Conversation`, where one exists, the message is processed as a response to the last prompt, otherwise it asks the user to start a new session. 
 
 #### Conversations
-Conversation flows are managed by the files [/prompts](./prompts). There are 4 types of conversations: register, incident, progress, and results.
-Each file is a JSON object containing a `key`, and an array of `prompts`. The key indicates the type of conversation, and the prompts contain all the questions to be asked in the conversation flow. A `Prompt` 3 parameters:
+Conversation flows are managed by the files in [/prompts](./prompts). There are 4 types of conversations: register, incident, progress, and results.
+Each file is a JSON object containing a `key`, and an array of `prompts`. The key indicates the type of conversation, and the prompts contain all the questions to be asked in the conversation flow. A `Prompt` has 3 parameters:
 1. template (string) - This is the WhatsApp template to be sent to the user.
 2. needs_response (boolean) - True if the a response is expected from the user, otherwise, False. PS: All conversations should end with a prompt that doesn't require a response, i.e the last object in the prompts array should have  `needs_response` set to false
 3. handler (function(response, user)) - Function to call when the user responds to this prompt, input parameters are the response text from the user, and the user object. If the response is valid, return `True`, otherwise return `False` so the user is prompted to enter response again. 
