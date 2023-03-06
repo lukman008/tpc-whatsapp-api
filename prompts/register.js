@@ -6,7 +6,6 @@ const register = {
             template: 'welcome',
             needs_response: true,
             handler: function (response, user) {
-                console.log('welcome handler')
                 return response.trim().toLowerCase() === 'register';
             }
         },
@@ -14,14 +13,12 @@ const register = {
             template: 'collect_pu',
             needs_response: true,
             handler: async function (response, user) {
-                console.log('collect PU handler');
                 let pattern = /^\d{2}\/\d{2}\/\d{2}\/\d{3}$/;
                 if(!pattern.test(response)){
                     return false;
                 };
                 //Check PU Code against list of PUs in lagos
                 let updateResult = await User.updateOne({phone: user.phone}, {pu_code: response, pu_address: "Lorem Ipsum"});
-                console.log("Update result",updateResult)
                 return true;
             },
         },
