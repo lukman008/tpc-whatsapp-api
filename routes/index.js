@@ -91,7 +91,7 @@ router.post('/message',isPhoneRegistered, isOpenSession, async function (req, re
       name: req.body.name
     })
     let existingUser = await User.findOne({phone: req.body.phone})
-    if(!existingUser._id){
+    if(!existingUser){
       await user.save();
     }
   }
@@ -106,7 +106,7 @@ router.post('/message',isPhoneRegistered, isOpenSession, async function (req, re
     messages: [],
     lastPrompt: null,
     lastMessage: null
-  });
+  });``
 
   let prompt = sessions[conversation.key].prompts[0];
   let message = {
