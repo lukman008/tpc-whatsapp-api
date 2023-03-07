@@ -105,7 +105,7 @@ router.post('/message',isPhoneRegistered, isOpenSession, async function (req, re
     },
     messages: [],
     lastPrompt: null,
-    lastMessage: null
+    lastMessage: null,
   });``
 
   let prompt = sessions[conversation.key].prompts[0];
