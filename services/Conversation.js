@@ -18,9 +18,12 @@ module.exports = {
           let message = {
             prompt: prompt.template,
             response: null,
-            needs_response: prompt.needs_response
+            needs_response: prompt.needs_response,
+            data:{
+              user
+            }
           };
-          await WhatsApp.sendMessage({phone: user.phone}, message.prompt);
+          await WhatsApp.sendMessage({phone: user.phone}, message);
           conversation.lastMessage = message;
           conversation.lastPromptIndex = 0;
           await conversation.save();

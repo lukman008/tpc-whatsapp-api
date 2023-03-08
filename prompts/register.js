@@ -1,32 +1,221 @@
 const User = require('../models/user');
+const PollingUnit = require('../models/pollingunit')
 const register = {
     key: 'register',
     prompts: [
         {
             template: 'welcome',
             needs_response: true,
-            handler: function (response, user) {
+            handler: function (response, conversation) {
                 return response.trim().toLowerCase() === 'register';
+            }
+        },
+        {
+            template: 'know_your_pu',
+            needs_response: true,
+            handler: async function (response, conversation) {
+                let result = {
+                    valid: false,
+                    next_prompt: 'collect_pu'
+                }
+                if (response.trim().toLowerCase() === 'yes') {
+                    result.valid = true;
+                } else if (response.trim().toLowerCase() === 'no') {
+                    let lgas = await PollingUnit.aggregate( [ { $group : { _id : "$lga" } } ] )
+                    lgas = JSON.parse(JSON.stringify(lgas));
+                    lgas = lgas.map((lga,index)=>{
+                        lga.index = index+1;
+                        return lga;
+                    })
+                    result = {
+                        valid: true,
+                        next_prompt: 'collect_lga',
+                        data: {lgas}
+                    }
+                } else {
+                    return false;
+                }
+                return result;
             }
         },
         {
             template: 'collect_pu',
             needs_response: true,
-            handler: async function (response, user) {
+            handler: async function (response, conversation) {
+                response = response.trim();
+                let user = conversation.user;
+                let _response = response.replace(/-/g,'/');
                 let pattern = /^\d{2}\/\d{2}\/\d{2}\/\d{3}$/;
-                if(!pattern.test(response)){
+                if (!pattern.test(_response)) {
                     return false;
                 };
+                let storedPU = await PollingUnit.findOne({ pu_code: _response });
+                if (storedPU) {
+                    storedPU = JSON.parse(JSON.stringify(storedPU))
+                    // let updateResult = await User.updateOne({ phone: user.phone }, { pu_code: _response, pu_address: storedPU.pu_address });
+                    return {
+                        valid: true,
+                        next_prompt: 'confirm_details',
+                        data: {name: user.name, pu_code: storedPU.pu_code, pu_address: storedPU.pu_name, lga: storedPU.lga, ward: storedPU.ward_name}
+                    };
+                }else{
+                    return{
+                        valid: false,
+                        message:`Polling Unit code ${response} is not a valid polling unit in Lagos`
+                    }
+                }
                 //Check PU Code against list of PUs in lagos
-                let updateResult = await User.updateOne({phone: user.phone}, {pu_code: response, pu_address: "Lorem Ipsum"});
-                return true;
+
             },
+        },
+        {
+            template: 'collect_lga',
+            needs_response: true,
+            handler: async function (response, conversation) {
+                if(!Number.isInteger(Number(response))){
+                    return false;
+                }
+                response = Number(response);
+                let lgas = conversation.lastMessage.data.lgas;
+                let selectedLGA;
+                if(lgas && Array.isArray(lgas)){
+                    for(let i = 0; i < lgas.length; i++){
+                        if(response === lgas[i].index){
+                            selectedLGA = lgas[i]._id;
+                            console.log(selectedLGA);
+                            break;
+                        }
+                    }
+                }
+                if(!selectedLGA){
+                    return false;
+                }
+                let wards = await  PollingUnit.aggregate( [{ $match: { lga: selectedLGA}}, { $group : { _id : "$ward_name" } } ] );
+                if(wards){
+                    wards = JSON.parse(JSON.stringify(wards));
+                    wards = wards.map((ward,index)=>{
+                        ward.index = index+1;
+                        return ward;
+                    })
+                    return {
+                        valid: true,
+                        next_prompt:'collect_ward',
+                        data:{lga:selectedLGA, wards}
+                    }
+                }
+                return false;
+            }
+        },
+        {
+            template: 'collect_ward',
+            needs_response: true,
+            handler: async function (response, conversation) {
+                if(!Number.isInteger(Number(response))){
+                    return false;
+                }
+                response = Number(response);
+                let wards = conversation.lastMessage.data.wards;
+                let selectedWard;
+                if(wards && Array.isArray(wards)){
+                    for(let i = 0; i < wards.length; i++){
+                        if(response === wards[i].index){
+                            selectedWard = wards[i]._id;
+                            console.log(selectedWard);
+                            break;
+                        }
+                    }
+                }
+                if(!selectedWard){
+                    return false;
+                }
+                let pus = await  PollingUnit.aggregate( [{ $match: { ward_name: selectedWard}}, { $group : { _id : "$pu_name" } } ] );
+                if(pus){
+                    pus = JSON.parse(JSON.stringify(pus));
+                    pus = pus.map((pu,index)=>{
+                        pu.index = index+1;
+                        return pu;
+                    })
+                    return {
+                        valid: true,
+                        next_prompt:'collect_pu_name',
+                        data:{ pus, lga: conversation.lastMessage.data.lga, selectedWard}
+                    }
+                }
+                return false;
+            }
+        },
+        {
+            template: 'collect_pu_name',
+            needs_response: true,
+            handler: async function (response, conversation) {
+                if(!Number.isInteger(Number(response))){
+                    return false;
+                }
+                response = Number(response);
+                let pus = conversation.lastMessage.data.pus;
+                let selectedPU;
+                if(pus && Array.isArray(pus)){
+                    for(let i = 0; i < pus.length; i++){
+                        if(response === pus[i].index){
+                            selectedPU = pus[i]._id;
+                            console.log(selectedPU);
+                            break;
+                        }
+                    }
+                }
+                if(!selectedPU){
+                    return false;
+                }
+                let puFromDB =await PollingUnit.findOne({pu_name:selectedPU});
+                if(!puFromDB){
+                    return false;
+                }
+                puFromDB = JSON.parse(JSON.stringify(puFromDB));
+                console.log(puFromDB)
+                if(puFromDB.pu_code){
+                    return {
+                        valid: true,
+                        next_prompt:'confirm_details',
+                        data: {name: conversation.user.name, pu_code: puFromDB.pu_code, pu_address: puFromDB.pu_name, lga: puFromDB.lga} 
+                    }
+                }
+                
+                return false;
+            }
         },
         {
             template: 'confirm_details',
             needs_response: true,
-            handler: function (response, user) {
-                return response.trim().toLowerCase() === 'yes';
+            handler:async function (response, conversation) {
+                if(response.trim().toLowerCase() === 'yes'){
+                    let PU = conversation.lastMessage.data;
+                    let updateResult = await User.updateOne({ phone: conversation.user.phone }, { pu_code: PU.pu_code, pu_address: PU.pu_address });
+                    if(updateResult){
+                        return {
+                            valid: true,
+                            next_prompt:'registration_complete',
+                            data: {
+                                name: conversation.user.name,
+                                pu_code: PU.pu_code,
+                                pu_name: PU.pu_address,
+                                ward: PU.ward,
+                                lga:PU.lga
+                            }
+                        };
+                    }
+                    return false;
+                }else if(response.trim().toLowerCase() === 'no'){
+                    let previousMessage = conversation.messages[conversation.messages.length - 1]
+                    // console.log(previousMessage.data)
+                    return {
+                        valid: true,
+                        next_prompt:previousMessage.prompt,
+                        data: previousMessage.data
+                    }
+                    return false
+                }else{
+                    return false;
+                }
             }
         },
         {
