@@ -13,8 +13,7 @@ const templates = {
     //     },
     welcome: function (data) {
         let name = typeof data === 'object' ? data.name : 'there'
-        return `
-The People’s Count.  
+        return `The People’s Count.  
 This is a bot that you can use to:
 -  Upload your polling unit result sheet
 - Upload a video of votes being counted
@@ -102,16 +101,16 @@ _Respond with the corresponding number of the LGA. For example, reply with *${wa
     invalid_input: function (data) {
         return `Your previous input was invalid, please try again`
     },
-//     initiate_report: function (data) {
-//         return `
-//     Hi ${data.name}, What would you like to do?
-//  1.   Report an incident
-//  2.   Upload result sheet
-//  3.   Upload video of vote count
+    //     initiate_report: function (data) {
+    //         return `
+    //     Hi ${data.name}, What would you like to do?
+    //  1.   Report an incident
+    //  2.   Upload result sheet
+    //  3.   Upload video of vote count
 
-// _Respond with the corresponding number of the incident. For example, respond with *1* if you want to *Report an incident*_
-//     `
-//     },
+    // _Respond with the corresponding number of the incident. For example, respond with *1* if you want to *Report an incident*_
+    //     `
+    //     },
     initiate_report: function (data) {
         return `
 Hi ${data.name},
