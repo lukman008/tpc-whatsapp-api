@@ -109,8 +109,7 @@ _Respond with the corresponding number of the LGA. For example, reply with *${wa
     //     `
     //     },
     initiate_report: function (data) {
-        return `
-Hi ${data.name},
+        return `Hi ${data.name},
 
 What would you like to do?`
     },
