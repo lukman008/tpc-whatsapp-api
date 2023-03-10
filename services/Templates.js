@@ -21,11 +21,8 @@ This is a bot that you can use to:
 See yours and other people’s submissions on our Twitter account @thepeoplescount. Push the button below to get started`
     },
     know_your_pu: function (data) {
-        return `Thank you for volunteering to be a Citizen Observer and doing your part to make sure that every vote is counted.
-Let's get started. Do you know your polling unit code?
-    - YES
-    - NO
-        `
+        return `Thank you for volunteering to be a Citizen Observer and doing your part to make sure that every vote is counted. 
+        Let's get started. Do you know your polling unit code?`
     },
     collect_pu: function (data) {
         return `Enter your polling unit code in this format (24-00-00-000)
@@ -115,8 +112,7 @@ _Respond with the corresponding number of the LGA. For example, reply with *${wa
         return `
 Hi ${data.name},
 
-What would you like to do?
-    `
+What would you like to do?`
     },
     type_of_incident: function (data) {
         return `
