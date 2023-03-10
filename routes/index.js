@@ -14,118 +14,86 @@ router.get('/', function (req, res, next) {
 });
 
 
-router.post('/message',isPhoneRegistered, isOpenSession, async function (req, res) {
-  
-  /*
-  Is this a new session
-    YES - 
-      Get phone number
-      Check if phone number is registered
-        YES, prompt for input
-            1 for incident report
-            2 for progress report
-            3 for result update
-        NO, prompt user to register PU CODE
-    NO:
-     Find session from DB
-     Parse text and validate input
-     Prompt for next step
+router.post('/message', isPhoneRegistered, isOpenSession, async function (req, res, next) {
+  try {
+    if (!req.body.From) {
+      return res.status(400).send({ message: "Sender information is missing" });
+    }
 
-
-     Middleware
-      - isPhoneRegistered
-      - isOpenSession
+    const phone = req.body.From.replace('whatsapp:', '');
+    const name = req.body.ProfileName;
+    const message = req.body.Body;
     
-    Services
-      - Send Message
-      - Find User
-      - Create New Session
-      - Fetch Ongoing Session
-      - handleResponse
-
-
-  */
-  if (!req.body.From) { //No sender information
-    res.status(401).end();
-    return;
-  }
-  req.body.phone = req.body.From.replace('whatsapp:','')
-  req.body.name = req.body.ProfileName;
-  req.body.message = req.body.Body; 
-  if (req.registeredUser) { 
-    if (req.openSession) {
-      let result = await responseHandler(req.session, req.body, res);
-      res.send({
-        message: "Open session, next step",
-        result
-      })
-      return
-    } else {
-      /*
-      Start new session
-      Enter 1, 2, or 3 for Incidents, progress or result reports
-      */
-      switch (req.body.message) {
-        case '1':
-          await ConversationService.new('incident', req.user);
-          break;
-        case '2':
-          await ConversationService.new('progress', req.user);
-          break;
-        case '3':
-          await ConversationService.new('result', req.user);
-          break;
-        default:
-          await WhatsApp.sendMessage(req.user, 'initiate_report');
-          break;
+    if (req.registeredUser) {
+      if (req.openSession && req.registeredUser.pu_code) {
+        const result = await responseHandler(req.session, req.body, res);
+        return res.send({ message: "Open session, next step", result });
+      } else if (!req.registeredUser.pu_code && req.openSession) {
+        let conversation = req.session;
+        if (conversation.key === 'register') {
+          const result = await responseHandler(req.session, req.body, res);
+          return res.send({ message: "Open session, next step", result });
+        } else {
+          conversation.status = 'closed';
+          let close_result = await Conversation.updateOne({ _id: conversation._id }, conversation);
+          console.log(conversation._id, close_result)
+          await WhatsApp.sendMessage(conversation.user, { prompt: 'welcome', data: { name: conversation.user.name } });
+          return;
+        }
+      } else {
+        switch (message) {
+          case '1':
+            await ConversationService.new('incident', req.user);
+            break;
+          case '2':
+            await ConversationService.new('progress', req.user);
+            break;
+          case '3':
+            await ConversationService.new('result', req.user);
+            break;
+          default:
+            if (req.user.pu_code) {
+              await WhatsApp.sendMessage(req.user, { prompt: 'initiate_report', data: { name } });
+            }
+            break;
+        }
+        return res.send({ message: "Starting new session" });
       }
-      res.send({
-        message: "Starting new session"
-      })
-      return;
+    } else {
+      const user = new User({ phone, name });
+      const existingUser = await User.findOne({ phone });
+      if (!existingUser) {
+        await user.save();
+      }
     }
 
-  } else {
-    let user = new User({
-      phone: req.body.phone,
-      name: req.body.name
-    })
-    let existingUser = await User.findOne({phone: req.body.phone})
-    if(!existingUser){
-      await user.save();
-    }
+    const conversation = new Conversation({
+      _id: uniqid('sid-'),
+      key: 'register',
+      status: 'open',
+      user: { phone, name },
+      messages: [],
+      lastPrompt: null,
+      lastMessage: null,
+    });
+
+    const prompt = sessions[conversation.key].prompts[0];
+    const messageToSend = {
+      prompt: prompt.template,
+      response: null,
+      needs_response: prompt.needs_response,
+      data: { name }
+    };
+    await WhatsApp.sendMessage({ phone }, messageToSend);
+    conversation.lastMessage = messageToSend;
+    conversation.lastPromptIndex = 0;
+    await conversation.save();
+
+    return res.send({ message: messageToSend.prompt, phone, eof: true });
+
+  } catch (err) {
+    console.error(err)
   }
-  let conversation = new Conversation({
-    _id: uniqid('sid-'),
-    key: 'register',
-    status: 'open',
-    user: {
-      phone: req.body.phone,
-      name: req.body.name
-    },
-    messages: [],
-    lastPrompt: null,
-    lastMessage: null
-  });``
-
-  let prompt = sessions[conversation.key].prompts[0];
-  let message = {
-    prompt: prompt.template,
-    response: null,
-    needs_response: prompt.needs_response
-  };
-  await WhatsApp.sendMessage({ phone: req.body.phone }, message.prompt);
-  conversation.lastMessage = message;
-  conversation.lastPromptIndex = 0;
-  await conversation.save();
-
-  res.send({
-    message: message.prompt,
-    phone: req.body.phone,
-    eof: true
-  })
-
-  // res.send("OK");
 });
 
 router.post('/callback', function (req, res) {
