@@ -1,6 +1,7 @@
 const templates = {
     welcome: function (data) {
-        return `Hi ${data.name},
+        let name = typeof data === 'object' ? data.name : 'there'
+        return `Hi ${name},
 
 Welcome to The People's Count. This is a bot that you can use to:
         
