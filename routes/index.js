@@ -22,7 +22,7 @@ router.post('/message', isPhoneRegistered, isOpenSession, async function (req, r
 
     const phone = req.body.From.replace('whatsapp:', '');
     const name = req.body.ProfileName;
-    const message = req.body.Body;
+    const message = req.body.ButtonText ? req.body.ButtonText: req.body.Body;
     
     if (req.registeredUser) {
       if (req.openSession && req.registeredUser.pu_code) {

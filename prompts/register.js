@@ -7,7 +7,7 @@ const register = {
             template: 'welcome',
             needs_response: true,
             handler: function (response, conversation) {
-                return response.trim().toLowerCase() === 'register';
+                return response.trim().toLowerCase() === 'get started';
             }
         },
         {
