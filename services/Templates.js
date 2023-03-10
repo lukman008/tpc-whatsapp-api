@@ -1,15 +1,25 @@
 const templates = {
+    //     welcome: function (data) {
+    //         let name = typeof data === 'object' ? data.name : 'there'
+    //         return `Hi ${name},
+
+    // Welcome to The People's Count. This is a bot that you can use to:
+
+    //     - Upload your polling unit result sheet
+    //     - Upload a video of votes being counted
+    //     - Report an incident
+
+    // See yours and other people's submissions on our Twitter account @thepeoplescount. Push the button below to get started`
+    //     },
     welcome: function (data) {
         let name = typeof data === 'object' ? data.name : 'there'
-        return `Hi ${name},
-
-Welcome to The People's Count. This is a bot that you can use to:
-        
-    - Upload your polling unit result sheet
-    - Upload a video of votes being counted
-    - Report an incident
-        
-See yours and other people's submissions on our Twitter account @thepeoplescount. Push the button below to get started`
+        return `
+The People’s Count.  
+This is a bot that you can use to:
+-  Upload your polling unit result sheet
+- Upload a video of votes being counted
+-  Report an incident
+See yours and other people’s submissions on our Twitter account @thepeoplescount. Push the button below to get started`
     },
     know_your_pu: function (data) {
         return `Thank you for volunteering to be a Citizen Observer and doing your part to make sure that every vote is counted.
@@ -33,7 +43,7 @@ _Respond with *00* to go back to the previous menu_
         lgas.forEach((lga) => {
             message += `\n${lga.index}. ${lga._id} `
         })
-    message+=`\n00. Go to previous menu.
+        message += `\n00. Go to previous menu.
     \n
 _Respond with the corresponding number of the LGA. For example, reply with *${lgas[0].index}* if you want to choose *${lgas[0]._id}*_`
         return message
@@ -49,10 +59,10 @@ _Respond with the corresponding number of the LGA. For example, reply with *${lg
         wards.forEach((ward) => {
             message += `\n${ward.index}. ${ward._id} `
         })
-        message+=`\n00. Go to previous menu.
+        message += `\n00. Go to previous menu.
         \n
 _Respond with the corresponding number of the LGA. For example, reply with *${wards[0].index}* if you want to choose *${wards[0]._id}*_`
-           
+
 
         return message
     },
@@ -92,17 +102,24 @@ _Respond with the corresponding number of the LGA. For example, reply with *${wa
     invalid_input: function (data) {
         return `Your previous input was invalid, please try again`
     },
+//     initiate_report: function (data) {
+//         return `
+//     Hi ${data.name}, What would you like to do?
+//  1.   Report an incident
+//  2.   Upload result sheet
+//  3.   Upload video of vote count
+
+// _Respond with the corresponding number of the incident. For example, respond with *1* if you want to *Report an incident*_
+//     `
+//     },
     initiate_report: function (data) {
         return `
-    Hi ${data.name}, What would you like to do?
- 1.   Report an incident
- 2.   Upload result sheet
- 3.   Upload video of vote count
+Hi ${data.name},
 
-_Respond with the corresponding number of the incident. For example, respond with *1* if you want to *Report an incident*_
+What would you like to do?
     `
     },
-    type_of_incident: function(data){
+    type_of_incident: function (data) {
         return `
         What's happening at your polling unit.
 
@@ -124,7 +141,7 @@ _Respond with the corresponding number of the incident. For example, reply with 
 
         `
     },
-    incident_details: function(data){
+    incident_details: function (data) {
         `
         Please share picture or video evidence if you have it, or reply *NO* if you don't.`
     }
