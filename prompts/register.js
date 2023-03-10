@@ -42,12 +42,9 @@ const register = {
             template: 'collect_pu',
             needs_response: true,
             handler: async function(response, conversation) {
-                // Use more descriptive variable names
                 const { user } = conversation;
                 const puCode = response.trim().replace(/-/g,'/');
                 const pattern = /^\d{2}\/\d{2}\/\d{2}\/\d{3}$/;
-              
-                // Use switch statement instead of if statement
                 switch (puCode) {
                   case "00":
                     return {
