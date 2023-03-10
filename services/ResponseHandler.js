@@ -6,9 +6,9 @@ async function handleResponse(conversation, body, res) {
     const sid = conversation._id;
     let lastPrompt = prompts[conversation.lastPromptIndex];
     if (lastPrompt.needs_response) {
-        let isValidResponse = await lastPrompt.handler(body.message, conversation);
+        let isValidResponse = await lastPrompt.handler(body.Body, conversation);
         if ( (typeof isValidResponse === 'boolean' && isValidResponse) || (typeof isValidResponse === 'object' && isValidResponse.valid)) {
-            conversation.lastMessage.response = body.message;
+            conversation.lastMessage.response = body.Body;
             if (body.MediaUrl0) conversation.lastMessage.media0 = body.MediaUrl0;
             if (body.MediaUrl1) conversation.lastMessage.media1 = body.MediaUrl1;
             if (body.MediaUrl2) conversation.lastMessage.media2 = body.MediaUrl2;

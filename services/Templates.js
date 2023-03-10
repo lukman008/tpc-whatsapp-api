@@ -18,18 +18,23 @@ Let's get started. Do you know your polling unit code?
         `
     },
     collect_pu: function (data) {
-        return `Enter your polling unit code (00-00-00-000)`
+        return `Enter your polling unit code in this format (24-00-00-000)
+    
+_Respond with *00* to go back to the previous menu_
+    `
     },
     collect_lga: function (data) {
         let lgas = data.lgas;
         let message = `
-    Choose your LG
+    Choose your Local Government Area
 
-    (type just the number from below)`
+    `
         lgas.forEach((lga) => {
             message += `\n${lga.index}. ${lga._id} `
         })
-
+    message+=`\n00. Go to previous menu.
+    \n
+_Respond with the corresponding number of the LGA. For example, reply with *${lgas[0].index}* if you want to choose *${lgas[0]._id}*_`
         return message
     },
     collect_ward: function (data) {
@@ -43,11 +48,16 @@ Let's get started. Do you know your polling unit code?
         wards.forEach((ward) => {
             message += `\n${ward.index}. ${ward._id} `
         })
+        message+=`\n00. Go to previous menu.
+        \n
+_Respond with the corresponding number of the LGA. For example, reply with *${wards[0].index}* if you want to choose *${wards[0]._id}*_`
+           
 
         return message
     },
     collect_pu_name: function (data) {
         let pus = data.pus;
+        console.log("PUs length", pus.length);
         let message = `
         *${data.lga} LGA*
         \n *${data.ward}*
@@ -58,7 +68,7 @@ Let's get started. Do you know your polling unit code?
         pus.forEach((pu) => {
             message += `\n${pu.index}. ${pu._id} `
         })
-
+        console.log("Text length", message.length)
         return message
     },
     confirm_details: function (data) {

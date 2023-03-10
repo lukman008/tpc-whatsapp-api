@@ -41,37 +41,58 @@ const register = {
         {
             template: 'collect_pu',
             needs_response: true,
-            handler: async function (response, conversation) {
-                response = response.trim();
-                let user = conversation.user;
-                let _response = response.replace(/-/g,'/');
-                let pattern = /^\d{2}\/\d{2}\/\d{2}\/\d{3}$/;
-                if (!pattern.test(_response)) {
-                    return false;
-                };
-                let storedPU = await PollingUnit.findOne({ pu_code: _response });
-                if (storedPU) {
-                    storedPU = JSON.parse(JSON.stringify(storedPU))
-                    // let updateResult = await User.updateOne({ phone: user.phone }, { pu_code: _response, pu_address: storedPU.pu_address });
+            handler: async function(response, conversation) {
+                // Use more descriptive variable names
+                const { user } = conversation;
+                const puCode = response.trim().replace(/-/g,'/');
+                const pattern = /^\d{2}\/\d{2}\/\d{2}\/\d{3}$/;
+              
+                // Use switch statement instead of if statement
+                switch (puCode) {
+                  case "00":
                     return {
-                        valid: true,
-                        next_prompt: 'confirm_details',
-                        data: {name: user.name, pu_code: storedPU.pu_code, pu_address: storedPU.pu_name, lga: storedPU.lga, ward: storedPU.ward_name}
+                      valid: true,
+                      next_prompt: 'know_your_pu',
+                      data: user
                     };
-                }else{
-                    return{
-                        valid: false,
-                        message:`Polling Unit code ${response} is not a valid polling unit in Lagos`
+                  default:
+                    if (!pattern.test(puCode)) {
+                      throw new Error(`Polling Unit code ${puCode} is invalid`);
+                    }
+                    try {
+                      const storedPU = await PollingUnit.findOne({ pu_code: puCode });
+              
+                      if (storedPU) {
+                        const { pu_address, pu_name, lga, ward_name } = storedPU;
+                        // Use destructuring to simplify code
+                        return {
+                          valid: true,
+                          next_prompt: 'confirm_details',
+                          data: {name: user.name, pu_code: puCode, pu_address, pu_name, lga, ward: ward_name}
+                        };
+                      } else {
+                        return {
+                          valid: false,
+                          message: `Polling Unit code ${puCode} is not a valid polling unit in Lagos`
+                        };
+                      }
+                    } catch (error) {
+                      console.error(`An error occurred while querying the database: ${error.message}`);
                     }
                 }
-                //Check PU Code against list of PUs in lagos
-
-            },
+              },
         },
         {
             template: 'collect_lga',
             needs_response: true,
             handler: async function (response, conversation) {
+                if(response === "00"){
+                    return {
+                        valid:true,
+                        next_prompt:'know_your_pu',
+                        data:conversation.user
+                    }
+                }
                 if(!Number.isInteger(Number(response))){
                     return false;
                 }
@@ -110,6 +131,20 @@ const register = {
             template: 'collect_ward',
             needs_response: true,
             handler: async function (response, conversation) {
+                if(response === "00"){
+                    let lgas = await PollingUnit.aggregate( [ { $group : { _id : "$lga" } } ] )
+                    lgas = JSON.parse(JSON.stringify(lgas));
+                    lgas = lgas.map((lga,index)=>{
+                        lga.index = index+1;
+                        return lga;
+                    })
+                    result = {
+                        valid: true,
+                        next_prompt: 'collect_lga',
+                        data: {lgas}
+                    }
+                    return result;
+                }
                 if(!Number.isInteger(Number(response))){
                     return false;
                 }
@@ -135,10 +170,14 @@ const register = {
                         pu.index = index+1;
                         return pu;
                     })
+                    let all_pus = pus;
+                    if(pus.length > 20){
+                        
+                    }
                     return {
                         valid: true,
                         next_prompt:'collect_pu_name',
-                        data:{ pus, lga: conversation.lastMessage.data.lga, selectedWard}
+                        data:{ pus, lga: conversation.lastMessage.data.lga, selectedWard, meta:{all: all_pus, page:0} }
                     }
                 }
                 return false;
@@ -158,7 +197,6 @@ const register = {
                     for(let i = 0; i < pus.length; i++){
                         if(response === pus[i].index){
                             selectedPU = pus[i]._id;
-                            console.log(selectedPU);
                             break;
                         }
                     }
