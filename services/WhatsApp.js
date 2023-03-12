@@ -19,12 +19,16 @@ module.exports = {
             to: `whatsapp:${user.phone}`
         });
         }
+        let messageData = {
+            from: `whatsapp:${process.env.BOT_SID}`,
+            body: copyGenerator(message.data),
+            to: `whatsapp:${user.phone}`
+        }
+        if(message.prompt === "collect_pu"){
+            messageData.mediaUrl = "https://res.cloudinary.com/lukman/image/upload/v1678618040/Screenshot_2023-03-12_at_11.47.12_rcqenl.png"
+        }
         client.messages
-            .create({
-                from: `whatsapp:${process.env.BOT_SID}`,
-                body: copyGenerator(message.data),
-                to: `whatsapp:${user.phone}`
-            })
+            .create(messageData)
             .then(message => console.log(message.sid));
     }
 }

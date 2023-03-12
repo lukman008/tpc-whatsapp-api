@@ -34,6 +34,7 @@ router.post('/message', isPhoneRegistered, isOpenSession, async function (req, r
           const result = await responseHandler(req.session, req.body, res);
           return res.send({ message: "Open session, next step", result });
         } else {
+          console.log('user no convo')
           conversation.status = 'closed';
           let close_result = await Conversation.updateOne({ _id: conversation._id }, conversation);
           console.log(conversation._id, close_result)

@@ -1,5 +1,12 @@
 const User = require('../models/user');
 const PollingUnit = require('../models/pollingunit')
+
+function fetchNthPage(array, pageNumber) {
+    const pageSize = 20; // Number of items per page
+    const startIndex = (pageNumber - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return array.slice(startIndex, endIndex);
+  }
 const register = {
     key: 'register',
     prompts: [
@@ -7,7 +14,7 @@ const register = {
             template: 'welcome',
             needs_response: true,
             handler: function (response, conversation) {
-                return response.trim().toLowerCase() === 'get started';
+                return response.trim().toLowerCase() === 'hello';
             }
         },
         {
@@ -60,12 +67,12 @@ const register = {
                       const storedPU = await PollingUnit.findOne({ pu_code: puCode });
               
                       if (storedPU) {
-                        const { pu_address, pu_name, lga, ward_name } = storedPU;
+                        const { pu_name, lga, ward_name } = storedPU;
                         // Use destructuring to simplify code
                         return {
                           valid: true,
                           next_prompt: 'confirm_details',
-                          data: {name: user.name, pu_code: puCode, pu_address, pu_name, lga, ward: ward_name}
+                          data: {name: user.name, pu_code: puCode, pu_address: pu_name, lga, ward: ward_name}
                         };
                       } else {
                         return {
@@ -169,12 +176,12 @@ const register = {
                     })
                     let all_pus = pus;
                     if(pus.length > 20){
-                        
+                        pus = pus.slice(0, 20);
                     }
                     return {
                         valid: true,
                         next_prompt:'collect_pu_name',
-                        data:{ pus, lga: conversation.lastMessage.data.lga, selectedWard, meta:{all: all_pus, page:0} }
+                        data:{ pus, lga: conversation.lastMessage.data.lga, selectedWard, meta:{all: all_pus, page:1} }
                     }
                 }
                 return false;
@@ -184,6 +191,43 @@ const register = {
             template: 'collect_pu_name',
             needs_response: true,
             handler: async function (response, conversation) {
+                let previousMessageData = conversation.lastMessage.data;
+                let previousPage = previousMessageData.meta.page;
+                let allPUs = previousMessageData.meta.all;
+                if(response == '00' && (previousPage === 1)){
+                    let wards = await  PollingUnit.aggregate( [{ $match: { lga: previousMessageData.lga}}, { $group : { _id : "$ward_name" } } ] );
+                if(wards){
+                    wards = JSON.parse(JSON.stringify(wards));
+                    wards = wards.map((ward,index)=>{
+                        ward.index = index+1;
+                        return ward;
+                    })
+                    return {
+                        valid: true,
+                        next_prompt:'collect_ward',
+                        data:{lga:previousMessageData.lga, wards}
+                    }
+                }
+                return false;
+                }
+                console.log('page', previousPage)
+               
+                if(response == '00' && (previousPage > 1)){
+                    let pus = fetchNthPage(allPUs, previousPage - 1);
+                    return {
+                        valid: true,
+                        next_prompt:'collect_pu_name',
+                        data:{pus,lga: previousMessageData.lga, selectedWard: previousMessageData.selectedWard, meta:{all: allPUs, page:(previousPage-1)} }
+                    }
+                }
+                if(response == '99' && previousPage < Math.ceil(allPUs.length/20)){
+                    let pus = fetchNthPage(allPUs, previousPage+1);
+                    return {
+                        valid: true,
+                        next_prompt:'collect_pu_name',
+                        data:{pus,lga: previousMessageData.lga, selectedWard: previousMessageData.selectedWard, meta:{all: allPUs, page:(previousPage+1)} }
+                    }
+                }
                 if(!Number.isInteger(Number(response))){
                     return false;
                 }
@@ -211,7 +255,7 @@ const register = {
                     return {
                         valid: true,
                         next_prompt:'confirm_details',
-                        data: {name: conversation.user.name, pu_code: puFromDB.pu_code, pu_address: puFromDB.pu_name, lga: puFromDB.lga} 
+                        data: {name: conversation.user.name, ward: puFromDB.ward_name, pu_code: puFromDB.pu_code, pu_address: puFromDB.pu_name, lga: puFromDB.lga} 
                     }
                 }
                 
@@ -232,7 +276,7 @@ const register = {
                             data: {
                                 name: conversation.user.name,
                                 pu_code: PU.pu_code,
-                                pu_name: PU.pu_address,
+                                pu_address: PU.pu_address,
                                 ward: PU.ward,
                                 lga:PU.lga
                             }
@@ -247,7 +291,6 @@ const register = {
                         next_prompt:previousMessage.prompt,
                         data: previousMessage.data
                     }
-                    return false
                 }else{
                     return false;
                 }
