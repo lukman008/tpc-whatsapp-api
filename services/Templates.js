@@ -84,7 +84,7 @@ _Respond with the corresponding number of the Ward. For example, reply with *${w
         message += `\n00. Go to previous page.`
         
         if(data.meta.page < Math.ceil(data.meta.all.length / 20)){
-            message += `\n99. Go to next page.`
+            message += `\n999. Go to next page.`
         }
         message+=`\n\n_Respond with the corresponding number of the Polling Unit. For example, reply with *${pus[0].index}* if you want to choose *${pus[0]._id}*_`
         return message

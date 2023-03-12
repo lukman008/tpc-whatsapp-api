@@ -220,7 +220,7 @@ const register = {
                         data:{pus,lga: previousMessageData.lga, selectedWard: previousMessageData.selectedWard, meta:{all: allPUs, page:(previousPage-1)} }
                     }
                 }
-                if(response == '99' && previousPage < Math.ceil(allPUs.length/20)){
+                if(response == '999' && previousPage < Math.ceil(allPUs.length/20)){
                     let pus = fetchNthPage(allPUs, previousPage+1);
                     return {
                         valid: true,
