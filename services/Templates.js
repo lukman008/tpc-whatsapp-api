@@ -118,7 +118,7 @@ What would you like to do?`
     },
     type_of_incident: function (data) {
         return `
-        What's happening at your polling unit.
+        What's happening at your polling unit? Report any inconsistencies
 
 1.  Late or no show INEC officials
 2.  Official abuse of power: e.g., INEC officials not allowing certain people vote, not counting legitimate votes, etc.
@@ -139,9 +139,65 @@ _Respond with the corresponding number of the incident. For example, reply with 
         `
     },
     incident_details: function (data) {
+        return `Please share picture or video evidence if you have it, or reply *NO* if you don't.`
+    },
+    acknowledge_report: function(data){
+    return `Thank you! 
+
+Track reports and results from polling units across Lagos state at www.thepeoplescount.com and on our Twitter @thepeoplescount.`
+    },
+    confirm_results_counted: function(data){
+        return `Has the *FORM EC-8A* result sheet been signed by the INEC Presiding Officer?
+        
+_Reply with *Yes* or *No*_
         `
-        Please share picture or video evidence if you have it, or reply *NO* if you don't.`
+    },
+    result_evidence: function(data){
+        return `Please submit a photo of the GOVERNOR result sheet from your polling unit
+
+👉🏻 ${data.user.pu_address} (${data.user.pu_code})`
+    },
+    apc_count: function(data){
+        return `Now, please enter the total votes for each party.\n\n What's the total number of votes counted for *APC*?`
+    },
+    labour_count: function(data){
+        return `What's the total number of votes counted for *Labour Party*?`
+    },
+    pdp_count: function(data){
+        return `What's the total number of votes counted for *PDP*?`
+    },
+    others_count: function(data){
+        return `What's the total number of votes for all other parties (sum)?`
+    },
+    valid_count: function(data){
+        return `What's the total number of valid votes?`
+    },
+    rejected_count: function(data){
+        return `What's the total number of rejected votes?`
+    },
+    confirm_result: function(data){
+        return ` Type *YES* to confirm that these details are correct, otherwise type *NO*
+
+\nTotal number of valid votes -  ${data.valid_count}
+Total number of rejected votes - ${data.rejected_count}
+
+APC - ${data.apc_count}
+LP - ${data.lp_count}
+PDP - ${data.pdp_count}
+Others - ${data.others_count}
+
+
+`;
+    },
+    acknowledge_result: function(data){
+        return `Thank you! 
+
+Track reports and results from polling units across Lagos state at www.thepeoplescount.com and on our Twitter @thepeoplescount.`;
+    },
+    results_not_signed: function(data){
+        return `Only signed and stamped FORM EC-8A result sheets are allowed to be uploaded. Please try again when the results are signed or report an incident if something happened that prevented this`
     }
+
 }
 
 module.exports = templates

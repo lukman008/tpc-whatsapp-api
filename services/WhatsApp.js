@@ -6,6 +6,7 @@ const Templates = require('./Templates')
 module.exports = {
     sendMessage: async function (user, message) {
         let copyGenerator = Templates[message.prompt];
+        message.data.user = user;
         // console.log("WhatsApp Message", {
         //     from: `whatsapp:${process.env.BOT_SID}`,
         //     body: Templates[message.prompt](message.data),

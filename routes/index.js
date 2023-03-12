@@ -25,32 +25,30 @@ router.post('/message', isPhoneRegistered, isOpenSession, async function (req, r
     const message = req.body.ButtonText ? req.body.ButtonText: req.body.Body;
     
     if (req.registeredUser) {
-      if (req.openSession && req.registeredUser.pu_code) {
+      if (req.openSession && req.user.pu_code) {
         const result = await responseHandler(req.session, req.body, res);
         return res.send({ message: "Open session, next step", result });
-      } else if (!req.registeredUser.pu_code && req.openSession) {
+      } else if (!req.user.pu_code && req.openSession) {
         let conversation = req.session;
         if (conversation.key === 'register') {
           const result = await responseHandler(req.session, req.body, res);
           return res.send({ message: "Open session, next step", result });
         } else {
-          console.log('user no convo')
           conversation.status = 'closed';
           let close_result = await Conversation.updateOne({ _id: conversation._id }, conversation);
-          console.log(conversation._id, close_result)
           await WhatsApp.sendMessage(conversation.user, { prompt: 'welcome', data: { name: conversation.user.name } });
           return;
         }
       } else {
         switch (message) {
-          case '1':
+          case 'Report an incident':
             await ConversationService.new('incident', req.user);
             break;
           case '2':
             await ConversationService.new('progress', req.user);
             break;
-          case '3':
-            await ConversationService.new('result', req.user);
+          case 'Upload result sheet':
+            await ConversationService.new('results', req.user);
             break;
           default:
             if (req.user.pu_code) {

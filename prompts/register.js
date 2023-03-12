@@ -28,7 +28,7 @@ const register = {
                 if (response.trim().toLowerCase() === 'yes') {
                     result.valid = true;
                 } else if (response.trim().toLowerCase() === 'no') {
-                    let lgas = await PollingUnit.aggregate( [ { $group : { _id : "$lga" } } ] )
+                    let lgas = await PollingUnit.aggregate( [ { $group : { _id : "$lga" } },  { "$sort": { "_id": 1 } }, ] )
                     lgas = JSON.parse(JSON.stringify(lgas));
                     lgas = lgas.map((lga,index)=>{
                         lga.index = index+1;
@@ -115,7 +115,7 @@ const register = {
                 if(!selectedLGA){
                     return false;
                 }
-                let wards = await  PollingUnit.aggregate( [{ $match: { lga: selectedLGA}}, { $group : { _id : "$ward_name" } } ] );
+                let wards = await  PollingUnit.aggregate( [{ $match: { lga: selectedLGA}}, { $group : { _id : "$ward_name" } },  { "$sort": { "_id": 1 } } ] );
                 if(wards){
                     wards = JSON.parse(JSON.stringify(wards));
                     wards = wards.map((ward,index)=>{
@@ -136,7 +136,7 @@ const register = {
             needs_response: true,
             handler: async function (response, conversation) {
                 if(response === "00"){
-                    let lgas = await PollingUnit.aggregate( [ { $group : { _id : "$lga" } } ] )
+                    let lgas = await PollingUnit.aggregate( [ { $group : { _id : "$lga" } },  { "$sort": { "_id": 1 } } ] )
                     lgas = JSON.parse(JSON.stringify(lgas));
                     lgas = lgas.map((lga,index)=>{
                         lga.index = index+1;
@@ -167,7 +167,7 @@ const register = {
                 if(!selectedWard){
                     return false;
                 }
-                let pus = await  PollingUnit.aggregate( [{ $match: { ward_name: selectedWard}}, { $group : { _id : "$pu_name" } } ] );
+                let pus = await  PollingUnit.aggregate( [{ $match: { ward_name: selectedWard}}, { $group : { _id : "$pu_name" } },  { "$sort": { "_id": 1 } } ] );
                 if(pus){
                     pus = JSON.parse(JSON.stringify(pus));
                     pus = pus.map((pu,index)=>{
@@ -195,7 +195,7 @@ const register = {
                 let previousPage = previousMessageData.meta.page;
                 let allPUs = previousMessageData.meta.all;
                 if(response == '00' && (previousPage === 1)){
-                    let wards = await  PollingUnit.aggregate( [{ $match: { lga: previousMessageData.lga}}, { $group : { _id : "$ward_name" } } ] );
+                    let wards = await  PollingUnit.aggregate( [{ $match: { lga: previousMessageData.lga}}, { $group : { _id : "$ward_name" } },  { "$sort": { "_id": 1 } } ] );
                 if(wards){
                     wards = JSON.parse(JSON.stringify(wards));
                     wards = wards.map((ward,index)=>{
