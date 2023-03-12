@@ -127,8 +127,8 @@ What would you like to do?`
 5.  Voter fraud, e.g., mass thumb printing, voting for someone else
 6.  BVAS malfunction / server error / technical issues
 7.  Missing party agent(s).
-9.  Results not uploaded after INEC officials left the unit
-10. Other
+8.  Results not uploaded after INEC officials left the unit
+9. Other
 00. Go back to previous menu
 
 _Respond with the corresponding number of the incident. For example, reply with *1* if you want to report *Late or no show INEC officials*_
@@ -139,7 +139,7 @@ _Respond with the corresponding number of the incident. For example, reply with 
         `
     },
     incident_details: function (data) {
-        return `Please share picture or video evidence if you have it, or reply *NO* if you don't.`
+        return `Please share *ONE* picture or video evidence if you have it, or reply *NO* if you don't.`
     },
     acknowledge_report: function(data){
     return `Thank you! 
@@ -177,25 +177,33 @@ _Reply with *Yes* or *No*_
     },
     confirm_result: function(data){
         return ` Type *YES* to confirm that these details are correct, otherwise type *NO*
-
-\nTotal number of valid votes -  ${data.valid_count}
-Total number of rejected votes - ${data.rejected_count}
-
+\n
 APC - ${data.apc_count}
 LP - ${data.lp_count}
 PDP - ${data.pdp_count}
 Others - ${data.others_count}
 
+Total number of valid votes -  ${data.valid_count}
+Total number of rejected votes - ${data.rejected_count}
 
 `;
     },
     acknowledge_result: function(data){
-        return `Thank you! 
+        return `Thank you! 🚀
 
 Track reports and results from polling units across Lagos state at www.thepeoplescount.com and on our Twitter @thepeoplescount.`;
     },
     results_not_signed: function(data){
         return `Only signed and stamped FORM EC-8A result sheets are allowed to be uploaded. Please try again when the results are signed or report an incident if something happened that prevented this`
+    },
+    vote_video: function(data){
+        return `Please submit a video of votes being counted at your polling unit.
+
+Ensure that we can see and hear the polling agent counting from start to finish, for each party.
+        
+👉🏻 ${data.user.pu_address} (${data.user.pu_code})
+        
+        `;
     }
 
 }
