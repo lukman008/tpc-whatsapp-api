@@ -79,8 +79,7 @@ _Respond with the corresponding number of the Ward. For example, reply with *${w
         pus.forEach((pu) => {
             message += `\n${pu.index}. ${pu._id} `
         })
-        console.log('data',Object.keys(data));
-        console.log('meta',Object.keys(data.meta));
+        message+='\n'
         message += `\n00. Go to previous page.`
         
         if(data.meta.page < Math.ceil(data.meta.all.length / 20)){
