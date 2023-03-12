@@ -1,6 +1,7 @@
 
 const Results = require('../models/results')
 const WhatsApp = require('../services/WhatsApp')
+const Conversation = require('../models/conversation')
 const results = {
     key: 'results',
     prompts: [
@@ -19,9 +20,17 @@ const results = {
                     conversation.status = 'closed';
                     let close_result = await Conversation.updateOne({ _id: conversation._id }, conversation);
                     let message = {
-                        prompt: 'results_not_signed'
+                        prompt: 'results_not_signed',
+                        data:{
+                            status:'not_signed'
+                        }
                     }
                     WhatsApp.sendMessage(conversation.user,message )
+                    return {
+                        valid: true,
+                        next_prompt:'acknowledge_result',
+                        data:{}
+                    }
                 }
                 return false;
             }

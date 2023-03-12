@@ -68,7 +68,7 @@ async function handleResponse(conversation, body, res) {
 }
 
 async function sendMessage(user, message) {
-  
+  console.log(message)
   await WhatsApp.sendMessage(user, message);
 }
 
