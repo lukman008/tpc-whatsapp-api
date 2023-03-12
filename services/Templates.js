@@ -23,7 +23,7 @@ Use this bot to:
 👉🏻    Upload a video of votes being counted
 👉🏻    Report incidents
 
-Track reports and results from polling units across Lagos state at www.thepeoplescount.com and on our Twitter @thepeoplescount.
+To stay up-to-date, you can track reports and results from polling units across Lagos state on our website www.thepeoplescount.com, as well as our Twitter @thepeoplescount.
 
 Say “hello” to get started!`
     },
