@@ -1,6 +1,7 @@
 
 const Results = require('../models/results')
 const WhatsApp = require('../services/WhatsApp')
+const Airtable = require('../services/Airtable')
 const Conversation = require('../models/conversation')
 const results = {
     key: 'results',
@@ -273,6 +274,7 @@ const results = {
                         rejected_count: final_results.rejected_count
                     });
                     let updateResult = await final_results_db.save();
+                    await Airtable.update(conversation.user, final_results);
                     if(updateResult){
                         return {
                             valid: true,
